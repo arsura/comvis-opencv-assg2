@@ -3,7 +3,7 @@
 
 int main()
 {
-	cv::Mat img = cv::imread("resource\\img\\opencv_logo.png");
+	cv::Mat img = cv::imread("resource/img/opencv_logo.png");
 
 	if (img.empty()) {
 		std::cout << "failed to open opencv_logo.png" << std::endl;
