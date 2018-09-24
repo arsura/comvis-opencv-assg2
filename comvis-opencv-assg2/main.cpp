@@ -1,21 +1,32 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+using namespace cv;
+using namespace std;
+
+
 int main()
 {
-	cv::Mat img = cv::imread("resource/img/opencv_logo.png");
-	std::cout << "Push from maysa machine" << std::endl;
 
-	if (img.empty()) {
-		std::cout << "failed to open opencv_logo.png" << std::endl;
+	Mat frame;
+	Mat gray;
+
+	VideoCapture capture(0);
+	int q;
+
+	while (cvWaitKey(30) != 'q')
+	{
+		capture >> frame;
+		if (true)
+		{
+			// Convert to grayscale
+			cvtColor(frame, gray, CV_BGR2GRAY);
+
+			imshow("src", frame);
+			imshow("gray", gray);		
+
+		}
+
 	}
-	else {
-		std::cout << "opencv_logo.png loaded OK" << std::endl;
-	}
-
-	cv::namedWindow("opencv", cv::WINDOW_AUTOSIZE);
-	cv::imshow("opencv", img);
-	cv::waitKey(0);
-
 	return 0;
 }
