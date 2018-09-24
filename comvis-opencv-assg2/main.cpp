@@ -4,6 +4,7 @@
 int main()
 {
 	cv::Mat img = cv::imread("resource/img/opencv_logo.png");
+	std::cout << "Push from maysa machine" << std::endl;
 
 	if (img.empty()) {
 		std::cout << "failed to open opencv_logo.png" << std::endl;
