@@ -17,7 +17,7 @@ static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
 }
 
 
-void setLabel(cv::Mat& im, const std::string label, vector<vector<cv::Point>> contour)
+void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
 {
 	int fontface = cv::FONT_HERSHEY_SIMPLEX;
 	double scale = 0.4;
@@ -40,7 +40,7 @@ int main()
 	Mat gray;
 	Mat dst;
 	Mat bw;
-	vector<vector<cv::Point>> contours;
+	std::vector<std::vector<cv::Point>> contours;
 	vector<cv::Point> approx;
 
 	VideoCapture capture(0);
@@ -59,8 +59,8 @@ int main()
 			cv::Canny(gray, bw, 80, 240, 3);
 			
 			imshow("bw", bw);
-			imshow("src", frame);
-			imshow("gray", gray);
+			//imshow("src", frame);
+			//imshow("gray", gray);
 
 
 			// Find contours
@@ -78,7 +78,7 @@ int main()
 			
 				if (approx.size() == 3)
 				{
-					setLabel(dst, "TRI", cv::Mat(contours[i]));    // Triangles
+					setLabel(dst, "TRI", contours[i]);    // Triangles
 				}
 				else if (approx.size() >= 4 && approx.size() <= 6)
 				{
@@ -101,11 +101,11 @@ int main()
 					// Use the degrees obtained above and the number of vertices
 					// to determine the shape of the contour
 					if (vtc == 4)
-						setLabel(dst, "RECT", cv::Mat(contours[i]));
+						setLabel(dst, "RECT", contours[i]);
 					else if (vtc == 5)
-						setLabel(dst, "PENTA", cv::Mat(contours[i]));
+						setLabel(dst, "PENTA", contours[i]);
 					else if (vtc == 6)
-						setLabel(dst, "HEXA", cv::Mat(contours[i]));
+						setLabel(dst, "HEXA", contours[i]);
 
 				}
 				else
@@ -117,10 +117,10 @@ int main()
 
 					if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
 						std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2)
-						setLabel(dst, "CIR", cv::Mat(contours[i]));
+						setLabel(dst, "CIR", contours[i]);
 				}
 			}
-			imshow("src", frame);
+			//imshow("src", frame);
 			imshow("dst", dst);
 
 		}
