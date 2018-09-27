@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdio.h>
 
+#define IMAGE "resource//img//match.jpg"
+
 using namespace std;
 using namespace cv;
 
@@ -30,7 +32,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	// Load image and template
-	templ = imread("D:\\Com_Vision\\pic\\match.jpg", 1);
+	templ = imread(IMAGE, 1);
 
 	for (;;)
 	{
