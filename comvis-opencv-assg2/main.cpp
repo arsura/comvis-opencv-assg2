@@ -1,10 +1,11 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 using namespace cv;
 using namespace std;
-
 
 
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
@@ -33,6 +34,31 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 }
 
 
+void colorSegment(Mat snapshot) {
+
+	// find color
+	
+	int countGreen = 0; // 20
+	int countBlue = 0; // 50
+	int countRed = 0; // 100
+	int countPurple = 0; // 500
+	int countGray = 0; // 1000
+
+
+	for (int y = 0; y < snapshot.rows; y++)
+	{
+		for (int x = 0; x < snapshot.cols; x++)
+		{
+			// get pixel
+			Vec3b color = snapshot.at<Vec3b>(Point(x, y));
+			cout << color << endl;
+		}	
+	}
+
+
+}
+
+
 int main()
 {
 
@@ -40,91 +66,144 @@ int main()
 	Mat gray;
 	Mat dst;
 	Mat bw;
+	
+
 	std::vector<std::vector<cv::Point>> contours;
 	vector<cv::Point> approx;
 
-	VideoCapture capture(0);
+	namedWindow("bw", WINDOW_AUTOSIZE);
+	namedWindow("dst", WINDOW_AUTOSIZE);
+	namedWindow("video", WINDOW_AUTOSIZE);
+	namedWindow("roi", WINDOW_AUTOSIZE);
 	int q;
 
-	while (cvWaitKey(30) != 'q')
+	VideoCapture capture("http://10.61.0.23:4747/video");
+
+	if (!capture.isOpened())
 	{
+		cout << "Camera not found" << endl;
+		getchar();
+		return -1;
+	}
+
+	while (capture.isOpened())
+	{
+		
 		capture >> frame;
-		if (true)
-		{
-			// Convert to grayscale
-			cvtColor(frame, gray, CV_BGR2GRAY);
+		
+		if (frame.empty()) break;
 
-			// Use Canny instead of threshold to catch squares with gradient shading
-			blur(gray, bw, Size(3, 3));
-			cv::Canny(gray, bw, 80, 240, 3);
+		//frame = imread("resource/img/test_pict.jpg");
+		imshow("video", frame);
+
+		// Convert to grayscale
+		cvtColor(frame, gray, CV_BGR2GRAY);
+
+		// Use Canny instead of threshold to catch squares with gradient shading
+		blur(gray, bw, Size(3, 3));
+		Canny(gray, bw, 80, 100, 3);
 			
-			imshow("bw", bw);
-			//imshow("src", frame);
-			//imshow("gray", gray);
+		imshow("bw", bw);
+		//imshow("src", frame);
+		//imshow("gray", gray);
 
 
-			// Find contours
-			cv::findContours(bw.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		// Find contours
+		cv::findContours(bw.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-			frame.copyTo(dst);
+		frame.copyTo(dst);
 
-			for (int i = 0; i < contours.size(); i++) {
+		for (int i = 0; i < contours.size(); i++) {
 
-				// Approximate contours
-				cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*(0.02), true);
+			// Approximate contours
+			cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*(0.02), true);
 				
-				if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
-					continue;
+			if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+				continue;
 			
-				if (approx.size() == 3)
-				{
-					setLabel(dst, "TRI", contours[i]);    // Triangles
+			if (approx.size() == 3)
+			{
+				setLabel(dst, "TRI", contours[i]);    // Triangles
+			}
+			else if (approx.size() >= 4 && approx.size() <= 6)
+			{
+				// Number of vertices of polygonal curve
+				int vtc = approx.size();
+
+				// Get the cosines of all corners
+				std::vector<double> cos;
+
+				for (int j = 2; j < vtc + 1; j++)
+					cos.push_back(angle(cv::Point(approx[j%vtc]), cv::Point(approx[j - 2]), cv::Point(approx[j - 1])));
+
+				// Sort ascending the cosine values
+				std::sort(cos.begin(), cos.end());
+
+				// Get the lowest and the highest cosine
+				double mincos = cos.front();
+				double maxcos = cos.back();
+
+				// Use the degrees obtained above and the number of vertices
+				// to determine the shape of the contour
+
+				Rect bounding_rect;
+				Mat snapshot, colorArray;	
+				
+
+				if (vtc == 4) {
+						
+					setLabel(dst, "RECT", contours[i]);
+
+					//double area = contourArea(contours[i]);
+					//bounding_rect = boundingRect(contours[i]);
+
+					//Mat roi = Mat(frame, bounding_rect);
+					//cv::imshow("Snapshot", snapshot);
+					//snapshot = roi.clone();
+
+					//imshow("roi", roi);
+						
+					//colorSegment(roi);
+				
+						
 				}
-				else if (approx.size() >= 4 && approx.size() <= 6)
-				{
-					// Number of vertices of polygonal curve
-					int vtc = approx.size();
-
-					// Get the cosines of all corners
-					std::vector<double> cos;
-
-					for (int j = 2; j < vtc + 1; j++)
-						cos.push_back(angle(cv::Point(approx[j%vtc]), cv::Point(approx[j - 2]), cv::Point(approx[j - 1])));
-
-					// Sort ascending the cosine values
-					std::sort(cos.begin(), cos.end());
-
-					// Get the lowest and the highest cosine
-					double mincos = cos.front();
-					double maxcos = cos.back();
-
-					// Use the degrees obtained above and the number of vertices
-					// to determine the shape of the contour
-					if (vtc == 4)
-						setLabel(dst, "RECT", contours[i]);
-					else if (vtc == 5)
-						setLabel(dst, "PENTA", contours[i]);
-					else if (vtc == 6)
-						setLabel(dst, "HEXA", contours[i]);
-
-				}
+	
+			}
 				else
 				{
 					// Detect and label circles
-					double area = cv::contourArea(contours[i]);
-					cv::Rect r = cv::boundingRect(contours[i]);
+					Rect r;
+				
+					
+					double area = contourArea(contours[i]);
+					r = boundingRect(contours[i]);
 					int radius = r.width / 2;
 
 					if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
-						std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2)
+						std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2) {
+						
 						setLabel(dst, "CIR", contours[i]);
-				}
-			}
-			//imshow("src", frame);
-			imshow("dst", dst);
 
+						
+						Mat roi = Mat(frame, r);
+						imshow("roi", roi);
+
+
+						colorSegment(roi);
+						
+					}
+	
+
+				}
+				
 		}
+		//imshow("src", frame);
+		imshow("dst", dst);
+
+
+		if (waitKey(30) >= 0) break;
 	}
-		
+	
+	//waitKey(0);
 	return 0;
 }
