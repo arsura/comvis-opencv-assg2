@@ -34,7 +34,7 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 }
 
 
-void colorSegment(Mat snapshot) {
+void colorSegment(Mat snapshot, Mat src) {
 
 	// find color
 	
@@ -51,7 +51,79 @@ void colorSegment(Mat snapshot) {
 		{
 			// get pixel
 			Vec3b color = snapshot.at<Vec3b>(Point(x, y));
-			cout << color << endl;
+			//cout << color << endl;
+
+			// 20 Banknotes
+			if ((81 <= color[0] && color[0] <= 90) && 
+				(81 <= color[1] && color[1] <= 90) &&
+				(31 <= color[2] && color[2] <= 40)) 
+			{
+				countGreen++;
+				//cout << "countGreen = " << countGreen << endl;
+			
+				if (countGreen == 30) {
+					// do something
+					//cout << "20 Found" << endl;
+					y = snapshot.rows-1;
+				}
+				putText(src, "20 Thai Baht Banknote", Point(150, 100), FONT_HERSHEY_DUPLEX, 1, Scalar(255, 255, 255), 2);
+
+			}
+
+			// 50 Banknotes
+
+			// 100 Banknotes
+			else if 
+				((81 <= color[0] && color[0] <= 90) &&
+				(81 <= color[1] && color[1] <= 90) &&
+				(131 <= color[2] && color[2] <= 140))
+			{
+				countRed++;
+				//cout << "countRed = " << countRed << endl;
+
+				if (countRed == 30) {
+					// do something
+				//	cout << " 100 Found" << endl;
+					y = snapshot.rows - 1;
+				}
+				putText(src, "100 Thai Baht Banknote", Point(150, 100), FONT_HERSHEY_DUPLEX, 1, Scalar(255, 255, 255), 2);
+			}
+
+			// 500 Banknotes
+			else if
+				((81 <= color[0] && color[0] <= 90) &&
+				(61 <= color[1] && color[1] <= 70) &&
+				(51 <= color[2] && color[2] <= 60))
+			{
+				countPurple++;
+				//cout << "countPurple = " << countPurple << endl;
+
+				if (countPurple == 30) {
+					// do something
+				//	cout << " 500 Found" << endl;
+					y = snapshot.rows - 1;
+				}
+				putText(src, "500 Thai Baht Banknote", Point(150, 100), FONT_HERSHEY_DUPLEX, 1, Scalar(255, 255, 255), 2);
+			}
+
+			// 1000 Banknotes
+			else if
+				((55 <= color[0] && color[0] <= 65) &&
+				(65 <= color[1] && color[1] <= 85) &&
+				(91 <= color[2] && color[2] <= 100))
+			{
+				countGray++;
+			//	cout << "countGray = " << countGray << endl;
+
+				if (countGray == 30) {
+					// do something
+			//		cout << " 1000 Found" << endl;
+					y = snapshot.rows - 1;
+				}
+				putText(src, "1000 Thai Baht Banknote", Point(150, 100), FONT_HERSHEY_DUPLEX, 1, Scalar(255, 255, 255), 2);
+			}
+
+
 		}	
 	}
 
@@ -67,17 +139,18 @@ int main()
 	Mat dst;
 	Mat bw;
 	
+	
 
 	std::vector<std::vector<cv::Point>> contours;
 	vector<cv::Point> approx;
 
 	namedWindow("bw", WINDOW_AUTOSIZE);
-	namedWindow("dst", WINDOW_AUTOSIZE);
-	namedWindow("video", WINDOW_AUTOSIZE);
-	namedWindow("roi", WINDOW_AUTOSIZE);
+	//namedWindow("dst", WINDOW_AUTOSIZE);
+	namedWindow("src", WINDOW_AUTOSIZE);
+	//namedWindow("roi", WINDOW_AUTOSIZE);
 	int q;
 
-	VideoCapture capture("http://10.61.0.23:4747/video");
+	VideoCapture capture(0);
 
 	if (!capture.isOpened())
 	{
@@ -94,7 +167,7 @@ int main()
 		if (frame.empty()) break;
 
 		//frame = imread("resource/img/test_pict.jpg");
-		imshow("video", frame);
+		//imshow("video", frame);
 
 		// Convert to grayscale
 		cvtColor(frame, gray, CV_BGR2GRAY);
@@ -149,23 +222,10 @@ int main()
 				Rect bounding_rect;
 				Mat snapshot, colorArray;	
 				
-
+				// Rectangle detect
 				if (vtc == 4) {
 						
 					setLabel(dst, "RECT", contours[i]);
-
-					//double area = contourArea(contours[i]);
-					//bounding_rect = boundingRect(contours[i]);
-
-					//Mat roi = Mat(frame, bounding_rect);
-					//cv::imshow("Snapshot", snapshot);
-					//snapshot = roi.clone();
-
-					//imshow("roi", roi);
-						
-					//colorSegment(roi);
-				
-						
 				}
 	
 			}
@@ -186,10 +246,10 @@ int main()
 
 						
 						Mat roi = Mat(frame, r);
-						imshow("roi", roi);
+						//imshow("roi", roi);
 
 
-						colorSegment(roi);
+						colorSegment(roi, frame);
 						
 					}
 	
@@ -197,8 +257,8 @@ int main()
 				}
 				
 		}
-		//imshow("src", frame);
-		imshow("dst", dst);
+		imshow("src", frame);
+		//imshow("dst", dst);
 
 
 		if (waitKey(30) >= 0) break;
