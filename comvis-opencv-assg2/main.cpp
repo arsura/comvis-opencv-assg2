@@ -8,7 +8,7 @@ using namespace cv;
 using namespace std;
 
 
-static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
+static double angle(Point pt1, Point pt2, Point pt0)
 {
 	double dx1 = pt1.x - pt0.x;
 	double dy1 = pt1.y - pt0.y;
@@ -18,23 +18,23 @@ static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
 }
 
 
-void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour)
+void setLabel(Mat& im, const string label, vector<Point>& contour)
 {
 	int fontface = cv::FONT_HERSHEY_SIMPLEX;
 	double scale = 0.4;
 	int thickness = 1;
 	int baseline = 0;
 
-	cv::Size text = cv::getTextSize(label, fontface, scale, thickness, &baseline);
-	cv::Rect r = cv::boundingRect(contour);
+	Size text = getTextSize(label, fontface, scale, thickness, &baseline);
+	Rect r = boundingRect(contour);
 
-	cv::Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
-	cv::rectangle(im, pt + cv::Point(0, baseline), pt + cv::Point(text.width, -text.height), CV_RGB(255, 255, 255), CV_FILLED);
-	cv::putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
+	Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
+	rectangle(im, pt + Point(0, baseline), pt + Point(text.width, -text.height), CV_RGB(255, 255, 255), CV_FILLED);
+	putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
 }
 
 
-void colorSegment(Mat snapshot, Mat src) {
+void colorSegment(Mat& snapshot, Mat& src) {
 
 	// find color
 	
@@ -141,8 +141,8 @@ int main()
 	
 	
 
-	std::vector<std::vector<cv::Point>> contours;
-	vector<cv::Point> approx;
+	vector<vector<Point>> contours;
+	vector<Point> approx;
 
 	namedWindow("bw", WINDOW_AUTOSIZE);
 	//namedWindow("dst", WINDOW_AUTOSIZE);
@@ -182,16 +182,16 @@ int main()
 
 
 		// Find contours
-		cv::findContours(bw.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		findContours(bw.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
 		frame.copyTo(dst);
 
 		for (int i = 0; i < contours.size(); i++) {
 
 			// Approximate contours
-			cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*(0.02), true);
+			approxPolyDP(cv::Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*(0.02), true);
 				
-			if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+			if (fabs(contourArea(contours[i])) < 100 || !isContourConvex(approx))
 				continue;
 			
 			if (approx.size() == 3)
@@ -204,13 +204,13 @@ int main()
 				int vtc = approx.size();
 
 				// Get the cosines of all corners
-				std::vector<double> cos;
+				vector<double> cos;
 
 				for (int j = 2; j < vtc + 1; j++)
-					cos.push_back(angle(cv::Point(approx[j%vtc]), cv::Point(approx[j - 2]), cv::Point(approx[j - 1])));
+					cos.push_back(angle(Point(approx[j%vtc]), Point(approx[j - 2]), Point(approx[j - 1])));
 
 				// Sort ascending the cosine values
-				std::sort(cos.begin(), cos.end());
+				sort(cos.begin(), cos.end());
 
 				// Get the lowest and the highest cosine
 				double mincos = cos.front();
@@ -239,8 +239,8 @@ int main()
 					r = boundingRect(contours[i]);
 					int radius = r.width / 2;
 
-					if (std::abs(1 - ((double)r.width / r.height)) <= 0.2 &&
-						std::abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2) {
+					if (abs(1 - ((double)r.width / r.height)) <= 0.2 &&
+						abs(1 - (area / (CV_PI * (radius*radius)))) <= 0.2) {
 						
 						setLabel(dst, "CIR", contours[i]);
 
