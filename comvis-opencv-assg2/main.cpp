@@ -71,6 +71,22 @@ void colorSegment(Mat& snapshot, Mat& src) {
 			}
 
 			// 50 Banknotes
+			else if 
+				((111 <= color[0] && color[0] <= 120) &&
+				(81 <= color[1] && color[1] <= 90) &&
+				(31 <= color[2] && color[2] <= 40))
+			{
+				countBlue++;
+				//cout << "countBlue = " << countBlue << endl;
+
+				if (countBlue == 40) {
+					// do something
+					//cout << "20 Found" << endl;
+					y = snapshot.rows - 1;
+				}
+				putText(src, "50 Thai Baht Banknote", Point(150, 100), FONT_HERSHEY_DUPLEX, 1, Scalar(255, 255, 255), 2);
+
+			}
 
 			// 100 Banknotes
 			else if 
@@ -246,7 +262,7 @@ int main()
 
 						
 						Mat roi = Mat(frame, r);
-						//imshow("roi", roi);
+						imshow("roi", roi);
 
 
 						colorSegment(roi, frame);
